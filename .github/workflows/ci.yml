@@ -1,0 +1,42 @@
+name: Devotional rendering checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: devotional-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  local-renderer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - name: Install media tools and Hindi fonts
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg fontconfig fonts-noto-core
+      - name: Install locked dependencies
+        run: uv sync --frozen --python 3.11
+      - name: Check the media toolchain
+        run: uv run --frozen python -m app.services.devotional.cli doctor
+      - name: Lint devotional source and tests
+        run: uv run --frozen ruff check app/services/devotional test/devotional
+      - name: Test contracts, policy gates, and media rendering
+        run: uv run --frozen python -m pytest test/devotional test/services/test_video.py -q
+      - name: Render an offline preview
+        run: uv run --frozen python -m app.services.devotional.cli demo

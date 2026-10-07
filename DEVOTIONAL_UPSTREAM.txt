@@ -1,0 +1,5 @@
+MoneyPrinterTurbo
+https://github.com/harry0703/MoneyPrinterTurbo
+Commit: f20e0d602fdc73a0e5eb45a87844c301d22b5d80
+License: MIT (see LICENSE)
+Imported into the previously empty VIDEOS_DEV repository; origin is preserved.
